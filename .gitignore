@@ -1,0 +1,17 @@
+# Python généré automatiquement
+__pycache__/
+*.py[cod]
+
+# Environnements virtuels
+venv/
+.venv/
+
+# Secrets et configuration locale
+.env
+
+# Métadonnées Windows
+*:Zone.Identifier
+
+# Résultats générés
+outputs/
+
