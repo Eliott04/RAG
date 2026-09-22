@@ -7,7 +7,7 @@ Créer une branche dédiée avant toute modification.
 1. Mettre à jour la branche `main`.
 2. Créer une branche dédiée à la tâche.
 3. Créer des commits clairs.
-4. Ouvrir une Pull Request avant la fusion."
+4. Ouvrir une Pull Request avant la fusion.
 
 
 ## Avant une Pull Request
