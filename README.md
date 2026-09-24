@@ -29,3 +29,5 @@ src/
 └── evaluation/        # Scripts d'entraînement et d'évaluation
 
 
+On installe le projet comme ca : 
+
