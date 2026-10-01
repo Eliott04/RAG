@@ -40,4 +40,5 @@ Installer les dépendances principales :
 pip install torch transformers python-terrier tqdm
 
 Lancer l'évaluation de la pipeline SPLADE :
+
 python -m src.evaluation.eval_Splade
