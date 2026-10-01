@@ -28,6 +28,16 @@ src/
 ├── loss.py            # Fonctions de perte
 └── evaluation/        # Scripts d'entraînement et d'évaluation
 
+## Installation et exécution
 
-On installe le projet comme ca : 
+Créer et activer un environnement virtuel :
 
+python -m venv .venv
+source .venv/bin/activate
+
+Installer les dépendances principales :
+
+pip install torch transformers python-terrier tqdm
+
+Lancer l'évaluation de la pipeline SPLADE :
+python -m src.evaluation.eval_Splade
