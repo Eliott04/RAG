@@ -1,3 +1,3 @@
 # Exercice de conflit
 
-Décision : utiliser la solution A
+Décision : utiliser la solution B
