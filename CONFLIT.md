@@ -1,3 +1,3 @@
 # Exercice de conflit
 
-Statut : à définir
+Décision : à définir
