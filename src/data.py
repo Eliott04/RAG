@@ -60,7 +60,7 @@ def find_hard_negatives_bm25(
     """
     # Implement hard negative mining with BM25
     # Retrieve with BM25
-    results = retriever.search(query, num_negatives + len(positive_doc_ids) +20)
+    results = retriever.search(query).head(num_negatives + len(positive_doc_ids) + 20)
     results = results[~results["docno"].isin(positive_doc_ids)]
     hard_negatives = []
     #find hard negatives

@@ -34,10 +34,9 @@ def generate_text(tokenizer, model, device,
     # Decode and extract only the response
     generated = []
     for output in outputs:
-        text = tokenizer.decode(output, skip_special_tokens=True)
-        # Extract the part after the last "assistant"
-        if "assistant" in text.lower():
-            text = text.split("assistant")[-1].strip()
+        text = tokenizer.decode(
+            output[inputs["input_ids"].shape[-1]:], skip_special_tokens=True
+        ).strip()
         generated.append(text)
 
     return generated

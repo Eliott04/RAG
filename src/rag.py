@@ -28,6 +28,8 @@ class RAGPipeline:
         self.gen_tokenizer = generator_tokenizer
         self.pt_index_ref = pt_index_ref
         self.doc_ids = doc_ids
+        if not self.doc_ids:
+            raise ValueError("doc_ids must not be empty")
         self.top_k = top_k
         self.device = device
         
@@ -87,7 +89,7 @@ class RAGPipeline:
 
         results = []
         for idx in top_indices:
-            doc_id = self.doc_ids[idx]
+            doc_id = self.doc_ids[idx.item()]
             score = scores[idx].item()
             results.append((doc_id, score))
 
@@ -121,10 +123,9 @@ class RAGPipeline:
                 pad_token_id=self.gen_tokenizer.eos_token_id,
             )
 
-        response = self.gen_tokenizer.decode(outputs[0], skip_special_tokens=True)
-        # Extract only the response
-        if "assistant" in response.lower():
-            response = response.split("assistant")[-1].strip()
+        response = self.gen_tokenizer.decode(
+            outputs[0, inputs["input_ids"].shape[-1]:], skip_special_tokens=True
+        ).strip()
 
         return response
 
@@ -141,7 +142,7 @@ class RAGPipeline:
         # Implement RAG pipeline
         retrieved = self.retrieve(query)
         doc_texts = self._get_texts([doc_id for doc_id, _ in retrieved])
-        context = "\n\n".join([doc_texts[doc_id][:300] for doc_id, _ in retrieved])
+        context = "\n\n".join([doc_texts.get(doc_id, "")[:300] for doc_id, _ in retrieved])
         answer = self.generate(query, context)
 
 
