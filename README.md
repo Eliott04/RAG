@@ -32,9 +32,3 @@ Pour la génération, le rapport indique un **BERTScore F1 de 0,5796** avec augm
 - `src/Splade.py`, `src/rag.py` : entraînement du retriever et pipeline retrieval → génération.
 - `src/data.py`, `src/score.py` : données, BM25, métriques.
 - `src/evaluation/` : expériences InfoNCE, augmentation / rewriting et distillation.
-
-Les dépendances sont listées dans `requirements.txt`. Ce dépôt présente un **prototype expérimental**, pas un système RAG de production. Les résultats publiés ci-dessus décrivent l'expérience du rapport ; leur reproductibilité exacte avec cette version du code reste à confirmer.
-
-## Rapport
-
-**Experimental study of retrieval-augmented generation (RAG)** — Eliott Rakotondramanitra & Louis-Antoine Pham, février 2026. Le rapport complet détaille la méthodologie, les résultats et leurs limites.
