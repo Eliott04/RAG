@@ -195,7 +195,7 @@ if synthetic_pairs:
 
 
 "===========================training======================================================================="
-num_epochs = 3
+num_epochs = 20
 
 if training_triplets:
     print(f"Training on {len(training_triplets)} triplets with hard negatives...")
