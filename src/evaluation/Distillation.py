@@ -95,11 +95,11 @@ bm25 = pt.BatchRetrieve(index_ref, wmodel="BM25")
 
 
 # Create training data with hard negatives
-num_train_queries = 200
+num_train_queries = 130
 
 # Create triplets from qrels (original data)
 training_distill = create_distillation_dataset(
-    queries_df,
+    queries_df.iloc[:-20],
     qrels_df,
     index_ref,
     bm25,
@@ -132,7 +132,7 @@ dataloader = DataLoader(train_data, batch_size=16, shuffle=True)
 
 
 "===========================training======================================================================="
-num_epochs = 20
+num_epochs = 3
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Initialize cross-encoder
@@ -176,7 +176,7 @@ splade_encoder = splade_encoder.to(device)
 print(f"SPLADE encoder loaded on {device}")
 
 # Train SPLADE with hard negatives (reduced version for the practical)
-num_epochs = 20
+num_epochs = 3
 
 # Use training triplets created in Part 1b (with hard negatives)
 if training_distill:
@@ -213,7 +213,7 @@ if is_quantized:
 else:
     gen_model = AutoModelForCausalLM.from_pretrained(
         gen_model_name,
-        torch_dtype=torch.float16,
+        torch_dtype=torch.float16 if device.type == "cuda" else torch.float32,
     )
     gen_model = gen_model.to(device)
     print(f"Generation model loaded: {gen_model_name} on {device}")
@@ -233,7 +233,7 @@ rag = RAGPipeline(
 )
 
 # Evaluate SPLADE
-test_queries = queries_df.tail(20)  # Use last queries as test
+test_queries = queries_df.tail(20)  # Held-out queries for evaluation
 
 def splade_retriever(query: str) -> List[Tuple[str, float]]:
     return rag.retrieve(query, top_k=20)
