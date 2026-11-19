@@ -1,6 +1,6 @@
 # Experimental RAG — SPLADE × SmolLM2
 
-**Étude expérimentale de Retrieval-Augmented Generation (RAG)** sur le domaine **Technology** du dataset **LoTTE**. Projet réalisé par **Eliott Rakotondramanitra et Louis-Antoine Pham** (février 2026).
+**Étude expérimentale de Retrieval-Augmented Generation (RAG)** sur le domaine **Technology** du dataset **LoTTE**. **Eliott Rakotondramanitra et Louis-Antoine Pham** (février 2026).
 
 ## Objectif
 
