@@ -132,7 +132,7 @@ dataloader = DataLoader(train_data, batch_size=16, shuffle=True)
 
 
 "===========================training======================================================================="
-num_epochs = 3
+num_epochs = 20
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Initialize cross-encoder
@@ -176,7 +176,7 @@ splade_encoder = splade_encoder.to(device)
 print(f"SPLADE encoder loaded on {device}")
 
 # Train SPLADE with hard negatives (reduced version for the practical)
-num_epochs = 3
+num_epochs = 20
 
 # Use training triplets created in Part 1b (with hard negatives)
 if training_distill:
