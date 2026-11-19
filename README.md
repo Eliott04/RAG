@@ -1,119 +1,40 @@
-# RAG avec SPLADE et SmolLM2
+# Experimental RAG — SPLADE × SmolLM2
 
-> Projet expérimental de **Retrieval-Augmented Generation (RAG)** : recherche documentaire avec des représentations SPLADE, puis génération de réponses avec **SmolLM2-1.7B-Instruct**. Évaluation sur **LoTTE / Technology**.
+**Étude expérimentale de Retrieval-Augmented Generation (RAG)** sur le domaine **Technology** du dataset **LoTTE**. Projet réalisé par **Eliott Rakotondramanitra et Louis-Antoine Pham** (février 2026).
 
 ## Objectif
 
-Étudier l'impact de différentes stratégies d'amélioration de la recherche documentaire sur un système RAG :
-- **InfoNCE** : apprentissage contrastif du retriever SPLADE ;
-- **Hard negatives** : exemples négatifs extraits avec BM25 ;
-- **Augmentation de données** : ajout facultatif de questions synthétiques ;
-- **Query rewriting** : reformulation des requêtes avant retrieval ;
-- **Distillation** : supervision à partir d'un cross-encoder.
+Comparer des approches d'amélioration d'un pipeline RAG combinant **SPLADE** (recherche documentaire) et **SmolLM2** (génération de réponses) :
+- entraînement de SPLADE par **InfoNCE** ou **distillation** ;
+- **data augmentation** par génération de questions synthétiques ;
+- **query rewriting** avant la recherche de documents.
 
-Ce dépôt est un **prototype de recherche / expérimentation**, pas une application déployée en production. Les scripts réalisent entraînement et évaluation, et non un service web.
+L'étude mesure la qualité de la recherche avec **MRR / Recall@k** et celle de la génération avec **BERTScore**, sur **20 questions de test**. Le corpus expérimental comprend environ **15 000 documents** et **150 questions**.
 
-## Architecture
+## Résultats du rapport
 
-```text
-Questions (LoTTE Technology)
-       │
-       ├── [optionnel] Réécriture de requêtes (SmolLM2)
-       ▼
-    SPLADE (encodeur sparse)
-       │ similarité dot-product
-       ▼
-    Top-k documents (corpus indexé avec PyTerrier)
-       │
-       ▼
-    Contexte + question
-       │
-       ▼
-    SmolLM2-1.7B-Instruct
-       │
-       ▼
-    Réponse générée
-```
+| Méthode | MRR | Recall@10 |
+| --- | ---: | ---: |
+| InfoNCE | 0,2836 | 0,4500 |
+| InfoNCE + augmentation | **0,5083** | **0,6458** |
+| InfoNCE + augmentation + rewriting | 0,2419 | 0,5000 |
+| Distillation | 0,0167 | 0,0167 |
+| BM25 (référence) | 0,7408 | 0,8417 |
 
-**Stack :** Python, PyTorch, Hugging Face Transformers, PyTerrier, pandas, tqdm et Hugging Face Evaluate (BERTScore).
+**Conclusion :** l'augmentation par requêtes synthétiques améliore nettement SPLADE par rapport à InfoNCE seul. L'expansion des requêtes réduit les performances dans cette expérience ; la distillation n'a pas donné de résultats exploitables. **BM25 reste la meilleure référence** sur ce protocole.
 
-## Installation
+Pour la génération, le rapport indique un **BERTScore F1 de 0,5796** avec augmentation, contre **0,5619** après rewriting. Ces chiffres sont **tirés du rapport**, et non d'une nouvelle reproduction des expériences.
 
-Prérequis : **Python 3.10+**, accès internet pour télécharger LoTTE et les modèles Hugging Face. Prévoir plusieurs Go de mémoire (GPU conseillé ; exécution CPU possible mais lente).
+## Technologies et code
 
-```bash
-git clone https://github.com/Eliott04/RAG.git
-cd RAG
-python -m venv .venv
-source .venv/bin/activate   # Windows : .venv\\Scripts\\activate
-python -m pip install -r requirements.txt
-```
+**Python · PyTorch · Transformers · PyTerrier · SPLADE · SmolLM2 · LoTTE · BERTScore**
 
-> Si vous souhaitez tester les modifications de préparation portfolio avant leur fusion, utilisez `git checkout portfolio/rag-cleanup` après le clone.
+- `src/Splade.py`, `src/rag.py` : entraînement du retriever et pipeline retrieval → génération.
+- `src/data.py`, `src/score.py` : données, BM25, métriques.
+- `src/evaluation/` : expériences InfoNCE, augmentation / rewriting et distillation.
 
-## Exécution
+Les dépendances sont listées dans `requirements.txt`. Ce dépôt présente un **prototype expérimental**, pas un système RAG de production. Les résultats publiés ci-dessus décrivent l'expérience du rapport ; leur reproductibilité exacte avec cette version du code reste à confirmer.
 
-Depuis la **racine** du dépôt :
+## Rapport
 
-```bash
-python -m src.evaluation.eval_Splade
-```
-
-Ce script télécharge le dataset, construit l'index PyTerrier, entraîne SPLADE, exécute la chaîne RAG et calcule les métriques. **Attention :** il peut télécharger plusieurs modèles et effectuer un entraînement coûteux (3 époques par défaut dans la branche de nettoyage).
-
-Autres expériences :
-
-```bash
-python -m src.evaluation.eval_Splade_augemented
-python -m src.evaluation.Distillation
-```
-
-L'expérience augmentée **fonctionne sans fichier synthétique** (elle continue avec les qrels). Pour activer cette variante, fournir des paires `{ "query": "...", "doc_id": "..." }` dans `src/evaluation/outputs/practical-05/training_data_for_splade.json`.
-
-Les scripts ne sont pas paramétrés en ligne de commande : ajuster `num_docs`, `num_queries` et `num_epochs` dans le script concerné si nécessaire. Les index temporaires sont placés dans `outputs/` (ignoré par Git).
-
-## Évaluation
-
-- **Recherche :** MRR et Recall@1, @5 et @10 à partir des jugements de pertinence LoTTE.
-- **Génération :** BERTScore (precision, recall, F1), sur un ensemble de **20 réponses de référence intégrées aux scripts InfoNCE**.
-- **Échantillonnage :** jusqu'à 150 requêtes, dont les 20 dernières sont réservées à l'évaluation dans les scripts principaux.
-
-**Important :** aucune valeur chiffrée de performance n'est revendiquée ici sans exécution reproductible ni journaux de résultats. Les références de génération sont codées en dur et doivent être vérifiées par rapport aux identifiants exacts du jeu de test avant d'interpréter le BERTScore. La distillation utilise une procédure expérimentale distincte et ne calcule actuellement que les métriques de retrieval.
-
-## Organisation du code
-
-```text
-src/
-├── Splade.py                        # SPLADE, InfoNCE et distillation
-├── data.py                          # Préparation LoTTE et hard-negative mining
-├── rag.py                           # Retrieval + génération
-├── prompting.py                     # Prompts / query rewriting
-├── score.py                         # MRR, Recall@k, BERTScore
-├── loss.py                          # Fonctions de perte
-├── utils.py                         # Gestion des modèles et devices
-└── evaluation/
-    ├── eval_Splade.py               # Expérience InfoNCE
-    ├── eval_Splade_augemented.py     # Augmentation + rewriting
-    └── Distillation.py              # Expérience distillation
-```
-
-## Limites connues et pistes d'amélioration
-
-- Les essais nécessitent le téléchargement des modèles et du dataset, sans checkpoint ni résultats versionnés.
-- La totalité des représentations des documents est stockée en mémoire : convenable pour un prototype, pas pour un index de grande taille.
-- Le modèle de génération et l'évaluation BERTScore demandent des ressources matérielles importantes.
-- La variante distillation demande une validation fonctionnelle complémentaire ; le teacher est entraîné dans le script.
-- Une CI avec tests unitaires, un petit jeu de données de démonstration et une configuration commune des expériences amélioreraient la reproductibilité.
-
-## Vérifications rapides
-
-```bash
-python -m compileall -q src
-python -m unittest discover -s tests -v
-```
-
-La compilation et les tests unitaires ne remplacent **pas** un run complet sur LoTTE.
-
----
-
-**Statut :** prototype expérimental — projet RAG / Information Retrieval / NLP.
+**Experimental study of retrieval-augmented generation (RAG)** — Eliott Rakotondramanitra & Louis-Antoine Pham, février 2026. Le rapport complet détaille la méthodologie, les résultats et leurs limites.
