@@ -248,7 +248,8 @@ def train_splade(
                         F.normalize(negative_rep, p=2, dim=-1).T,
                     )
                     # Margin loss: positive scores should be higher than negative
-                    hard_neg_loss = F.relu(neg_scores.mean() + 0.2).mean()
+                    positive_scores = (F.normalize(query_rep, p=2, dim=-1) * F.normalize(positive_rep, p=2, dim=-1)).sum(dim=-1)
+                    hard_neg_loss = F.relu(0.2 + neg_scores.max(dim=1).values - positive_scores).mean()
                     cont_loss = cont_loss + 0.3 * hard_neg_loss
 
                 flops_loss = encoder.compute_flops_loss(
@@ -278,9 +279,9 @@ def train_splade(
             total_flops += flops_loss.item()
             num_batches += 1
 
-        avg_loss = total_loss / num_batches
-        avg_cont = total_contrastive / num_batches
-        avg_flops = total_flops / num_batches
+        avg_loss = total_loss / max(num_batches, 1)
+        avg_cont = total_contrastive / max(num_batches, 1)
+        avg_flops = total_flops / max(num_batches, 1)
 
         print(
             f"Epoch {epoch + 1}: Loss={avg_loss:.4f} (Contrastive={avg_cont:.4f}, FLOPS={avg_flops:.4f})"
@@ -436,12 +437,12 @@ def trainSplade_Distillation(
             total_flops += flops_loss.item()
             num_batches += 1
             
-            avg_loss = total_loss / num_batches
-            avg_flops = total_flops / num_batches
+            avg_loss = total_loss / max(num_batches, 1)
+            avg_flops = total_flops / max(num_batches, 1)
 
 
         print(
                 f"Epoch {epoch+1}: Loss={avg_loss:.4f},FLOPS={avg_flops:.4f})"
             )
-        encoder_student.eval()
-        print("Training complete!")
+    encoder_student.eval()
+    print("Training complete!")
